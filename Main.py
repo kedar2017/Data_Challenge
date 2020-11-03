@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 dataset = pd.read_csv('/Users/kedjoshi/Desktop/datasets_564980_1026099_life-expectancy.csv')
 
+#Cleaning
+'''
 column = dataset[list(dataset.columns)[3]]
 
 def nulls_breakdown(df=dataset):
@@ -55,16 +57,29 @@ def test_wins(col, lower_limit=0.0, upper_limit=0.0, show_plot=True):
         plt.title('wins=({},{}) {}'.format(lower_limit, upper_limit, col))
         #plt.show()
 
-'''
+
 plt.boxplot(dataset[list(dataset.columns)[3]])
 plt.show()
 plt.hist(dataset[list(dataset.columns)[3]])
 plt.show()
+
+nulls_breakdown()
+outliers_visual()
+outlier_count(list(dataset.columns)[3])
 '''
 
-#nulls_breakdown()
-#outliers_visual()
-#outlier_count(list(dataset.columns)[3])
+def test_wins(col, lower_limit=0.0, upper_limit=0.0, show_plot=True):
+    wins_data = mstats.winsorize(dataset[col], limits=(lower_limit, upper_limit))
+    wins_dict[col] = wins_data
+    if show_plot == True:
+        plt.figure(figsize=(15,5))
+        plt.subplot(121)
+        plt.boxplot(dataset[col])
+        plt.title('original {}'.format(col))
+        plt.subplot(122)
+        plt.boxplot(wins_data)
+        plt.title('wins=({},{}) {}'.format(lower_limit, upper_limit, col))
+        #plt.show()
 
 wins_dict = {}
 wins_df = dataset.iloc[:, 0:4]
@@ -79,6 +94,9 @@ wins_df[list(dataset.columns)[2]] = dataset[list(dataset.columns)[2]]
 wins_df[list(dataset.columns)[3]] = wins_dict[list(dataset.columns)[3]]
 #print(wins_df.describe())
 
+#Exploration
+
+'''
 #Q1
 print(wins_df[col[3]].median())
 
@@ -111,7 +129,43 @@ print(test.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x[
 #Q5
 
 test = wins_df
-test = test.loc[lambda test: (test['Year'] == 1980) | (test['Year'] == 2000), ['Entity', 'Life expectancy (years)']]
+test = test.loc[lambda test: (test['Year'] == 1969) | (test['Year'] == 2020), ['Entity', 'Life expectancy (years)']]
 test = test.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] > x['Life expectancy (years)'].quantile(0.95), :]
+
+print(test)
+
+#Q6
+
+test = wins_df
+test = test.loc[lambda test: (test['Year'] > 1969) & (test['Year'] < 2020), ['Entity', 'Life expectancy (years)']]
+test = test.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].max(), :]
+
+print(test)
+
+#Q3-II
+
+test = wins_df.loc[lambda wins_df: (wins_df['Year'] > 1969) & (wins_df['Year'] < 2020), :]
+
+df = pd.DataFrame({'Entity':[], 'change':[]})
+
+for i in range(1, len(test)):
+
+    current_row = test.iloc[i]
+    previous_row =test.iloc[i-1]
+
+    if (current_row[2] == previous_row[2] + 1):
+
+        df = df.append({'Entity': current_row[0],'change':current_row[3]-previous_row[3]}, ignore_index=True)
+
+df = df.groupby(['Entity']).apply(lambda x: x.max()).loc[lambda x: x['change'] > x['change'].quantile(0.95), :]
+
+print(df)
+
+'''
+
+#Q7
+
+test = wins_df.loc[lambda wins_df: (wins_df['Year'] > 1955) & (wins_df['Year'] < 1975), ['Entity', 'Life expectancy (years)']]
+test = test.groupby(['Entity']).apply(lambda x: (x.max()-x.min())*100/x.min()).loc[lambda x: x['Life expectancy (years)'] > 40, :]
 
 print(test)
