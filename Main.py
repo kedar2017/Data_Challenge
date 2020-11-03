@@ -5,11 +5,9 @@ import matplotlib.pyplot as plt
 
 dataset = pd.read_csv('/Users/kedjoshi/Desktop/datasets_564980_1026099_life-expectancy.csv')
 
-#Cleaning
-'''
-column = dataset[list(dataset.columns)[3]]
+######Cleaning
 
-def nulls_breakdown(df=dataset):
+def countNulls(df=dataset):
     df_cols = list(df.columns)
     cols_total_count = len(list(df.columns))
     cols_count = 0
@@ -23,7 +21,9 @@ def nulls_breakdown(df=dataset):
         cols_percent_null = round(cols_count/cols_total_count*100, 2)
     print('Out of {} total columns, {} contain null values; {}% columns contain null values.'.format(cols_total_count, cols_count, cols_percent_null))
 
-def outliers_visual(data=dataset):
+def showOutliers(data=dataset):
+
+    column = data[list(data.columns)[3]]
     plt.figure(figsize=(15, 40))
     plt.subplot(2,1,1)
     plt.boxplot(column)
@@ -33,7 +33,9 @@ def outliers_visual(data=dataset):
     plt.title('Histogram')
     #plt.show()
 
-def outlier_count(col, data=dataset):
+def countOutliers(data=dataset):
+
+    col = list(data.columns)[3]
     print(15*'-' + col + 15*'-')
     q75, q25 = np.percentile(data[col], [75, 25])
     iqr = q75 - q25
@@ -44,91 +46,77 @@ def outlier_count(col, data=dataset):
     print('Number of outliers: {}'.format(outlier_count))
     print('Percent of data that is outlier: {}%'.format(outlier_percent))
 
-def test_wins(col, lower_limit=0.0, upper_limit=0.0, show_plot=True):
-    wins_data = mstats.winsorize(dataset[col], limits=(lower_limit, upper_limit))
-    wins_dict[col] = wins_data
+def winsorizeData(dataN, data=dataset, lower_limit=0.0, upper_limit=0.0, show_plot=False):
+
+    col = list(data.columns)[3]
+    dataN[col] = mstats.winsorize(data[col], limits=(lower_limit, upper_limit))
     if show_plot == True:
         plt.figure(figsize=(15,5))
         plt.subplot(121)
-        plt.boxplot(dataset[col])
+        plt.boxplot(data[col])
         plt.title('original {}'.format(col))
         plt.subplot(122)
-        plt.boxplot(wins_data)
+        plt.boxplot(dataN[col])
         plt.title('wins=({},{}) {}'.format(lower_limit, upper_limit, col))
         #plt.show()
 
+########Exploration
 
-plt.boxplot(dataset[list(dataset.columns)[3]])
-plt.show()
-plt.hist(dataset[list(dataset.columns)[3]])
-plt.show()
 
-nulls_breakdown()
-outliers_visual()
-outlier_count(list(dataset.columns)[3])
+
+def entityStatistics(entity, yearA, yearB, data):
+
+    res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB) & (data['Entity'] == entity), :]
+
+    print('The following are the statistics for {0} between years {1} and {2}'.format(entity, yearA, yearB))
+    print('Median: {}'.format(res.median()['Life expectancy (years)']))
+    print('Maximum: {}'.format(res.max()['Life expectancy (years)']))
+    print('Minimum: {}'.format(res.min()['Life expectancy (years)']))
+    print('Standard Dev.: {}'.format(res.std()['Life expectancy (years)']))
+
+    return
+
+def globalStatistics(yearA, yearB, data):
+
+    res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
+
+    print('The following are the global statistics between years {0} and {1}'.format(yearA, yearB))
+    print('Median: {}'.format(res.median()['Life expectancy (years)']))
+    print('Maximum: {}'.format(res.max()['Life expectancy (years)']))
+    print('Minimum: {}'.format(res.min()['Life expectancy (years)']))
+    print('Standard Dev.: {}'.format(res.std()['Life expectancy (years)']))
+
+    return
+
+def annualChangeStatistics(yearA, yearB, data):
+
+    acData = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
+
+    res = pd.DataFrame({'Change':[]})
+
+    for i in range(1, len(acData)):
+
+        current_row = acData.iloc[i]
+        previous_row= acData.iloc[i-1]
+
+        if (current_row[2] == previous_row[2] + 1):
+
+            res = res.append({'Change':current_row[3]-previous_row[3]}, ignore_index=True)
+
+    print('The global median life expectancy annual change from year {0} to {1} is {2}'.format(yearA, yearB, res.median()['Change']))
+
+    return
+
 '''
-
-def test_wins(col, lower_limit=0.0, upper_limit=0.0, show_plot=True):
-    wins_data = mstats.winsorize(dataset[col], limits=(lower_limit, upper_limit))
-    wins_dict[col] = wins_data
-    if show_plot == True:
-        plt.figure(figsize=(15,5))
-        plt.subplot(121)
-        plt.boxplot(dataset[col])
-        plt.title('original {}'.format(col))
-        plt.subplot(122)
-        plt.boxplot(wins_data)
-        plt.title('wins=({},{}) {}'.format(lower_limit, upper_limit, col))
-        #plt.show()
-
-wins_dict = {}
-wins_df = dataset.iloc[:, 0:4]
-
-test_wins(list(dataset.columns)[3], lower_limit=0.1, upper_limit=0.0, show_plot=True)
-
-col = list(wins_df.columns)
-
-wins_df[list(dataset.columns)[0]] = dataset[list(dataset.columns)[0]]
-wins_df[list(dataset.columns)[1]] = dataset[list(dataset.columns)[1]]
-wins_df[list(dataset.columns)[2]] = dataset[list(dataset.columns)[2]]
-wins_df[list(dataset.columns)[3]] = wins_dict[list(dataset.columns)[3]]
-#print(wins_df.describe())
-
-#Exploration
-
-'''
-#Q1
-print(wins_df[col[3]].median())
-
-#Q2
-print(wins_df.loc[lambda wins_df: (wins_df['Year'] > 1969) & (wins_df['Year'] < 2020), :].median())
-
-#Q3
-test = wins_df.loc[lambda wins_df: (wins_df['Year'] > 1969) & (wins_df['Year'] < 2020), :]
-
-d = {'change': []}
-df = pd.DataFrame(d)
-
-for i in range(1, len(test)):
-
-    current_row = test.iloc[i]
-    previous_row =test.iloc[i-1]
-
-    if (current_row[2] == previous_row[2] + 1):
-
-        df = df.append({'change':current_row[3]-previous_row[3]}, ignore_index=True)
-
-print(df.describe())
-
 #Q4
 
-test = wins_df.loc[lambda wins_df: (wins_df['Year'] > 1989) & (wins_df['Year'] < 2020), ['Entity', 'Life expectancy (years)']]
+test = data.loc[lambda data: (data['Year'] > 1989) & (data['Year'] < 2020), ['Entity', 'Life expectancy (years)']]
 
 print(test.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].min(), :])
 
 #Q5
 
-test = wins_df
+test = data
 test = test.loc[lambda test: (test['Year'] == 1969) | (test['Year'] == 2020), ['Entity', 'Life expectancy (years)']]
 test = test.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] > x['Life expectancy (years)'].quantile(0.95), :]
 
@@ -136,7 +124,7 @@ print(test)
 
 #Q6
 
-test = wins_df
+test = data
 test = test.loc[lambda test: (test['Year'] > 1969) & (test['Year'] < 2020), ['Entity', 'Life expectancy (years)']]
 test = test.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].max(), :]
 
@@ -144,7 +132,7 @@ print(test)
 
 #Q3-II
 
-test = wins_df.loc[lambda wins_df: (wins_df['Year'] > 1969) & (wins_df['Year'] < 2020), :]
+test = data.loc[lambda data: (data['Year'] > 1969) & (data['Year'] < 2020), :]
 
 df = pd.DataFrame({'Entity':[], 'change':[]})
 
@@ -161,7 +149,6 @@ df = df.groupby(['Entity']).apply(lambda x: x.max()).loc[lambda x: x['change'] >
 
 print(df)
 
-'''
 
 #Q7
 def calc(data):
@@ -171,12 +158,12 @@ def calc(data):
     return data
 
 res = pd.DataFrame({'Entity1':[],'Life expectancy (years)':[]})
-wins_df['Entity1'] = wins_df['Entity']
+data['Entity1'] = data['Entity']
 
 for i in range(1950, 1980):
     for j in range(i+1, 1980):
 
-        test = wins_df.loc[lambda wins_df: (wins_df['Year'] == i) | (wins_df['Year'] == j), ['Entity','Entity1','Life expectancy (years)']]
+        test = data.loc[lambda data: (data['Year'] == i) | (data['Year'] == j), ['Entity','Entity1','Life expectancy (years)']]
 
         res1 = test.groupby(['Entity'])[['Entity1','Life expectancy (years)']]
         res1 = res1.apply(calc)
@@ -186,4 +173,37 @@ for i in range(1950, 1980):
         res = res.append(res1)
 
 print(res.sort_values(by=['Life expectancy (years)']).groupby(['Entity1']).describe())
+
+'''
+
+if __name__ == "__main__":
+
+    expCol = list(dataset.columns)[3]
+
+    plt.boxplot(dataset[expCol])
+    #plt.show()
+    plt.hist(dataset[expCol])
+    #plt.show()
+
+    countNulls()
+    showOutliers()
+    countOutliers()
+
+    winData = dataset.iloc[:, 0:4]
+
+    winsorizeData(winData, dataset, lower_limit=0.1, upper_limit=0.0, show_plot=True)
+
+    col = list(winData.columns)
+
+    winData[list(dataset.columns)[0]] = dataset[list(dataset.columns)[0]]
+    winData[list(dataset.columns)[1]] = dataset[list(dataset.columns)[1]]
+    winData[list(dataset.columns)[2]] = dataset[list(dataset.columns)[2]]
+
+    entityStatistics('Austria', 1980, 2005, winData)
+    globalStatistics(1980, 2005, winData)
+    annualChangeStatistics(1980, 2005, winData)
+
+
+
+
 
