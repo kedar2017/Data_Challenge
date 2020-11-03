@@ -164,8 +164,26 @@ print(df)
 '''
 
 #Q7
+def calc(data):
 
-test = wins_df.loc[lambda wins_df: (wins_df['Year'] > 1955) & (wins_df['Year'] < 1975), ['Entity', 'Life expectancy (years)']]
-test = test.groupby(['Entity']).apply(lambda x: (x.max()-x.min())*100/x.min()).loc[lambda x: x['Life expectancy (years)'] > 40, :]
+    data['Life expectancy (years)'] = (data['Life expectancy (years)'].max() - data['Life expectancy (years)'].min()) * 100 / (data['Life expectancy (years)'].min()*(j-i))
 
-print(test)
+    return data
+
+res = pd.DataFrame({'Entity1':[],'Life expectancy (years)':[]})
+wins_df['Entity1'] = wins_df['Entity']
+
+for i in range(1950, 1980):
+    for j in range(i+1, 1980):
+
+        test = wins_df.loc[lambda wins_df: (wins_df['Year'] == i) | (wins_df['Year'] == j), ['Entity','Entity1','Life expectancy (years)']]
+
+        res1 = test.groupby(['Entity'])[['Entity1','Life expectancy (years)']]
+        res1 = res1.apply(calc)
+        res1 = pd.DataFrame(res1)
+        res1 = res1.loc[lambda x: x['Life expectancy (years)'] *(j-i) > 40, :]
+
+        res = res.append(res1)
+
+print(res.sort_values(by=['Life expectancy (years)']).groupby(['Entity1']).describe())
+
