@@ -8,6 +8,10 @@ dataset = pd.read_csv('/Users/kedjoshi/Desktop/datasets_564980_1026099_life-expe
 ######Input
 
 def inputYears():
+    '''
+    This function asks the user to input yearA, yearB and entity. It checks for simple sanity and if okay, simply returns
+    :return:
+    '''
 
     yearA = 0
     yearB = 0
@@ -31,6 +35,12 @@ def inputYears():
 ######Cleaning
 
 def countNulls(df=dataset):
+
+    '''
+    This function calculates the null values in the dataset on every column and reports the null values in counts and percentage
+    :param df: Dataset
+    :return:
+    '''
     df_cols = list(df.columns)
     cols_total_count = len(list(df.columns))
     cols_count = 0
@@ -50,19 +60,33 @@ def countNulls(df=dataset):
 
     return
 
-def showOutliers(data=dataset):
+def showOutliers(data=dataset,show_plot=False):
 
-    column = data[list(data.columns)[3]]
-    plt.figure(figsize=(15, 40))
-    plt.subplot(2,1,1)
-    plt.boxplot(column)
-    plt.title('Boxplot')
-    plt.subplot(2,1,2)
-    plt.hist(column)
-    plt.title('Histogram')
-    plt.show()
+    '''
+    This function shows the datapoints as is in their raw form by plotting their boxplot and histogram
+    :param data: Dataset
+    :param show_plot: False by default
+    :return:
+    '''
+
+    if show_plot == True:
+        column = data[list(data.columns)[3]]
+        plt.figure(figsize=(15, 40))
+        plt.subplot(2,1,1)
+        plt.boxplot(column)
+        plt.title('Boxplot')
+        plt.subplot(2,1,2)
+        plt.hist(column)
+        plt.title('Histogram')
+        plt.show()
 
 def countOutliers(data=dataset):
+    '''
+    Counts outlier data points. The interquantile range is used as metric in setting the limits on the data. A multiple (1.5) in this case is used
+    to scale the interquartile range to set the limits
+    :param data: dataset
+    :return:
+    '''
 
     col = list(data.columns)[3]
     print(15*'-' + col + 15*'-')
@@ -78,6 +102,16 @@ def countOutliers(data=dataset):
     print('----------------------------------------------------------------------------------------------')
 
 def winsorizeData(dataN, data=dataset, lower_limit=0.0, upper_limit=0.0, show_plot=False):
+    '''
+    This function uses mstats.winsorize() to winsorize the data. It uses the upper and lower limits to the data.
+    Any data that is above/below this limit is just nset equal to the upper and lower limits
+    :param dataN:
+    :param data:
+    :param lower_limit:
+    :param upper_limit:
+    :param show_plot:
+    :return:
+    '''
 
     col = list(data.columns)[3]
     dataN[col] = mstats.winsorize(data[col], limits=(lower_limit, upper_limit))
@@ -93,9 +127,17 @@ def winsorizeData(dataN, data=dataset, lower_limit=0.0, upper_limit=0.0, show_pl
 
 ########Exploration
 
-
-
 def entityStatistics(entity, yearA, yearB, data):
+
+    '''
+    Uses lambda function to select the rows within the yearA to yearB range together with the entity name. Standard functions
+    are used to find the statistics
+    :param entity:
+    :param yearA: start year
+    :param yearB: end year
+    :param data:
+    :return:
+    '''
 
     res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB) & (data['Entity'] == entity), :]
 
@@ -111,6 +153,16 @@ def entityStatistics(entity, yearA, yearB, data):
 
 def globalStatistics(yearA, yearB, data):
 
+    '''
+    Uses lambda function to select the rows within the yearA to yearB range. Standard functions
+    are used to find the statistics
+    :param entity:
+    :param yearA: start year
+    :param yearB: end year
+    :param data:
+    :return:
+    '''
+
     res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
 
     print('----------------------------------------------------------------------------------------------')
@@ -124,6 +176,17 @@ def globalStatistics(yearA, yearB, data):
     return
 
 def annualChangeStatistics(yearA, yearB, data):
+
+    '''
+    Uses lambda function to select the rows within the yearA to yearB range together with the entity name. The selected
+    data is then iterated over with selecting consecutive year rows. That represents the annual change. Median of all such
+    change values is estimated using standard functions
+    :param entity:
+    :param yearA: start year
+    :param yearB: end year
+    :param data:
+    :return:
+    '''
 
     acData = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
 
@@ -210,23 +273,22 @@ def quickestIncreaseStatistics(yearA, yearB, data):
     res = pd.DataFrame({'Entity1':[],'Life expectancy (years)':[]})
     data['Entity1'] = data['Entity']
 
-    for i in range(yearA, yearB+1):
-        for j in range(i+1, yearB+1):
+    yearUnique = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), ['Year']]['Year'].unique()
 
-            test = data.loc[lambda data: (data['Year'] == i) | (data['Year'] == j), ['Entity','Entity1','Life expectancy (years)']]
+    for i in range(len(yearUnique)-1):
+        for j in range(i+1, len(yearUnique)):
 
-            res1 = test.groupby(['Entity'])[['Entity1','Life expectancy (years)']]
-            res1 = res1.apply(calc)
-            res1 = pd.DataFrame(res1)
-            res1 = res1.loc[lambda x: x['Life expectancy (years)'] > 40, :]
-            res1['Life expectancy (years)'] = res1['Life expectancy (years)'] / (j-i)
-            res = res.append(res1)
+            test = data.loc[lambda data: (data['Year'] == yearUnique[i]) | (data['Year'] == yearUnique[j]), ['Entity','Entity1','Year','Life expectancy (years)']].groupby(['Entity'])[['Entity1','Life expectancy (years)']]
+            test = test.apply(calc)
+            test = pd.DataFrame(test)
+            test = test.loc[lambda x: x['Life expectancy (years)'] > 40, :]
+            test['Life expectancy (years)'] = test['Life expectancy (years)'] / (yearUnique[j]-yearUnique[i])
+            res = res.append(test)
 
     res = res.sort_values(by=['Life expectancy (years)'], ascending=False)['Entity1'].unique()[:3]
 
     print('----------------------------------------------------------------------------------------------')
     print('The entities with quickest increase in expectancy by 40% are as follows ')
-
     for i in res:
         print(i)
     print('----------------------------------------------------------------------------------------------')
@@ -248,7 +310,7 @@ if __name__ == "__main__":
 
     winData = dataset.iloc[:, 0:4]
 
-    winsorizeData(winData, dataset, lower_limit=0.1, upper_limit=0.0, show_plot=True)
+    winsorizeData(winData, dataset, lower_limit=0.1, upper_limit=0.0)
 
     col = list(winData.columns)
 
@@ -261,7 +323,7 @@ if __name__ == "__main__":
     (yearA, yearB) = inputYears()
 
     entity= input("Please input the entity \n")
-
+    
     entityStatistics(entity, yearA, yearB, winData)
     globalStatistics(yearA, yearB, winData)
     annualChangeStatistics(yearA, yearB, winData)
