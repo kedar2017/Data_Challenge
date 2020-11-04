@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 dataset = pd.read_csv('/Users/kedjoshi/Desktop/datasets_564980_1026099_life-expectancy.csv')
 
+
+
 ######Input
 
 def inputYears():
@@ -62,7 +64,7 @@ def countNulls(data=dataset):
 
     return
 
-def showOutliers(data=dataset,show_plot=False):
+def showOutliers(data=dataset,showFigure=False):
 
     '''
     This function shows the datapoints as is in their raw form by plotting their boxplot and histogram
@@ -71,7 +73,7 @@ def showOutliers(data=dataset,show_plot=False):
     :return:
     '''
 
-    if show_plot == True:
+    if showFigure:
         column = data[list(data.columns)[3]]
         plt.figure(figsize=(15, 15))
         plt.subplot(2,1,1)
@@ -104,7 +106,7 @@ def countOutliers(data=dataset):
     print('Outlier Percent: {}%'.format(percentOutlier))
     print('----------------------------------------------------------------------------------------------')
 
-def winsorizeData(dataN, data=dataset, lower_limit=0.0, upper_limit=0.0, show_plot=False):
+def winsorizeData(dataN, data=dataset, lowerLimit=0.0, upperLimit=0.0, showFigure=False):
     '''
     This function uses mstats.winsorize() to winsorize the data. It uses the upper and lower limits to the data.
     Any data that is above/below this limit is just nset equal to the upper and lower limits
@@ -117,15 +119,15 @@ def winsorizeData(dataN, data=dataset, lower_limit=0.0, upper_limit=0.0, show_pl
     '''
 
     col = list(data.columns)[3]
-    dataN[col] = mstats.winsorize(data[col], limits=(lower_limit, upper_limit))
-    if show_plot == True:
-        plt.figure(figsize=(15,5))
+    dataN[col] = mstats.winsorize(data[col], limits=(lowerLimit, upperLimit))
+    if showFigure:
+        plt.figure(figsize=(10,5))
         plt.subplot(121)
         plt.boxplot(data[col])
         plt.title('original {}'.format(col))
         plt.subplot(122)
         plt.boxplot(dataN[col])
-        plt.title('wins=({},{}) {}'.format(lower_limit, upper_limit, col))
+        plt.title('modified {}'.format(col))
         plt.show()
 
 ########Exploration
@@ -324,7 +326,7 @@ def quickestIncreaseStatistics(yearA, yearB, data):
         for j in range(i+1, len(yearUnique)):
 
             test = data.loc[lambda data: (data['Year'] == yearUnique[i]) | (data['Year'] == yearUnique[j]), ['Entity','Entity1','Year','Life expectancy (years)']].groupby(['Entity'])[['Entity1','Life expectancy (years)']]
-            test = test.apply(calc)
+            test = test.apply(calcPercent)
             test = pd.DataFrame(test)
             test = test.loc[lambda x: x['Life expectancy (years)'] > 40, :]
             test['Life expectancy (years)'] = test['Life expectancy (years)'] / (yearUnique[j]-yearUnique[i])
@@ -355,7 +357,7 @@ if __name__ == "__main__":
 
     winData = dataset.iloc[:, 0:4]
 
-    winsorizeData(winData, dataset, lower_limit=0.1, upper_limit=0.0)
+    winsorizeData(winData, dataset, lowerLimit=0.1, upperLimit=0.0)
 
     col = list(winData.columns)
 
