@@ -223,6 +223,9 @@ def showOutliers(data=dataset):
 
 ```
 
+![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_2.png)
+
+
 We consider the metric 'Interquartile Range' to count how many values lie outside the range and mark them as 'outliers'. We consider some multiple of the IQR as a measure for counting the outliers.
 
 multiple = 1.5 for the below function
@@ -261,6 +264,10 @@ def winsorizeData(dataN, data=dataset, lower_limit=0.0, upper_limit=0.0, show_pl
         plt.title('wins=({},{}) {}'.format(lower_limit, upper_limit, col))
         #plt.show()
 ```
+Below is the plot showing the boxplot comparing the winsorized data and original data.
+
+![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_1.png)
+
 
 So the dataN is our new data that we will use for all the next functions.
 
