@@ -48,6 +48,8 @@ def countNulls(df=dataset):
     print('Out of {} total columns, {} contain null values; {}% columns contain null values.'.format(cols_total_count, cols_count, cols_percent_null))
     print('----------------------------------------------------------------------------------------------')
 
+    return
+
 def showOutliers(data=dataset):
 
     column = data[list(data.columns)[3]]

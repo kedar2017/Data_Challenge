@@ -18,12 +18,20 @@ Pandas, numpy, scipy.stats and matplotlib.pyplot are used in the module.
 
 ## Usage
 
-```python
-import foobar
+You will be presented with the following prompts to input the year range and entity values. The code checks the sanity
+of the entered year values.
 
-foobar.pluralize('word') # returns 'words'
-foobar.pluralize('goose') # returns 'geese'
-foobar.singularize('phenomena') # returns 'phenomenon'
+```python
+
+#################################################################################################
+Hello we will ask you to input a few values to get the module started
+Please input the starting year
+1990
+Please input the ending year
+2000
+Please input the entity
+'Austria'
+#################################################################################################
 ```
 
 ## Data Cleaning
@@ -163,14 +171,23 @@ def countNulls(df=dataset):
     df_cols = list(df.columns)
     cols_total_count = len(list(df.columns))
     cols_count = 0
+
+    print('----------------------------------------------------------------------------------------------')
     for loc, col in enumerate(df_cols):
         null_count = df[col].isnull().sum()
         total_count = df[col].isnull().count()
         percent_null = round(null_count/total_count*100, 2)
+
         if null_count > 0:
             cols_count += 1
+            print('{} column has {} null values: {}% null'.format(loc, col, null_count, percent_null))
+        cols_percent_null = round(cols_count/cols_total_count*100, 2)
+    print('Out of {} total columns, {} contain null values; {}% columns contain null values.'.format(cols_total_count, cols_count, cols_percent_null))
+    print('----------------------------------------------------------------------------------------------')
 
-#Print to be written
+    return
+
+#Here is the sample output from above
 
 Code has 583 null values: 3.06% null
 Out of 4 total columns, 1 contain null values; 25.0% columns contain null values.
@@ -219,7 +236,7 @@ def showOutliers(data=dataset):
     plt.subplot(2,1,2)
     plt.hist(column)
     plt.title('Histogram')
-    #plt.show()
+    plt.show()
 
 ```
 
@@ -238,12 +255,14 @@ def countOutliers(data=dataset):
     print(15*'-' + col + 15*'-')
     q75, q25 = np.percentile(data[col], [75, 25])
     iqr = q75 - q25
-    min_val = q25 - (iqr*multiple)
-    max_val = q75 + (iqr*multiple)
+    min_val = q25 - (iqr*1.5)
+    max_val = q75 + (iqr*1.5)
     outlier_count = len(np.where((data[col] > max_val) | (data[col] < min_val))[0])
     outlier_percent = round(outlier_count/len(data[col])*100, 2)
+    print('----------------------------------------------------------------------------------------------')
     print('Number of outliers: {}'.format(outlier_count))
     print('Percent of data that is outlier: {}%'.format(outlier_percent))
+    print('----------------------------------------------------------------------------------------------')
 ```
 
 In order to deal with the outliers, we follow a technique called 'Winsorization' to limit the upper and lower bounds. We check the limits as per the above formula and whichever values lie outside this range are simply made equal to the lower and upper limits using the mstats.winsorize() function.
@@ -262,8 +281,9 @@ def winsorizeData(dataN, data=dataset, lower_limit=0.0, upper_limit=0.0, show_pl
         plt.subplot(122)
         plt.boxplot(dataN[col])
         plt.title('wins=({},{}) {}'.format(lower_limit, upper_limit, col))
-        #plt.show()
+        plt.show()
 ```
+
 Below is the plot showing the boxplot comparing the winsorized data and original data.
 
 ![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_1.png)
@@ -480,13 +500,13 @@ so that the entity values are not lost after the groupby() function is used. The
 
 ```python
 
-def quickestIncreaseStatistics(data):
+def quickestIncreaseStatistics(yearA, yearB, data):
 
     res = pd.DataFrame({'Entity1':[],'Life expectancy (years)':[]})
     data['Entity1'] = data['Entity']
 
-    for i in range(1950, 1955):
-        for j in range(i+1, 1955):
+    for i in range(yearA, yearB+1):
+        for j in range(i+1, yearB+1):
 
             test = data.loc[lambda data: (data['Year'] == i) | (data['Year'] == j), ['Entity','Entity1','Life expectancy (years)']]
 
