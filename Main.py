@@ -5,14 +5,12 @@ import matplotlib.pyplot as plt
 
 dataset = pd.read_csv('/Users/kedjoshi/Desktop/datasets_564980_1026099_life-expectancy.csv')
 
-
-
 ######Input
 
 def inputYears():
     '''
     This function asks the user to input yearA, yearB and entity. It checks for simple sanity and if okay, simply returns
-    :return:
+    :return: None
     '''
 
     yearA = 0
@@ -41,7 +39,7 @@ def countNulls(data=dataset):
     '''
     This function calculates the null values in the dataset on every column and reports the null values in counts and percentage
     :param df: Dataset
-    :return:
+    :return: None
     '''
     col = list(data.columns)
     totalCols = len(list(data.columns))
@@ -70,7 +68,7 @@ def showOutliers(data=dataset,showFigure=False):
     This function shows the datapoints as is in their raw form by plotting their boxplot and histogram
     :param data: Dataset
     :param show_plot: False by default
-    :return:
+    :return: None
     '''
 
     if showFigure:
@@ -89,7 +87,7 @@ def countOutliers(data=dataset):
     Counts outlier data points. The interquantile range is used as metric in setting the limits on the data. A multiple (1.5) in this case is used
     to scale the interquartile range to set the limits
     :param data: dataset
-    :return:
+    :return: None
     '''
 
     col = list(data.columns)[3]
@@ -110,16 +108,17 @@ def winsorizeData(dataN, data=dataset, lowerLimit=0.0, upperLimit=0.0, showFigur
     '''
     This function uses mstats.winsorize() to winsorize the data. It uses the upper and lower limits to the data.
     Any data that is above/below this limit is just nset equal to the upper and lower limits
-    :param dataN:
-    :param data:
-    :param lower_limit:
-    :param upper_limit:
-    :param show_plot:
-    :return:
+    :param dataN: New data to be winsorized
+    :param data: Current data
+    :param lowerLimit: Limits on the winsorization
+    :param upperLimit: Limits on the winsorization
+    :param showFigure: Default to False
+    :return: None
     '''
 
     col = list(data.columns)[3]
     dataN[col] = mstats.winsorize(data[col], limits=(lowerLimit, upperLimit))
+
     if showFigure:
         plt.figure(figsize=(10,5))
         plt.subplot(121)
@@ -137,11 +136,11 @@ def entityStatistics(entity, yearA, yearB, data):
     '''
     Uses lambda function to select the rows within the yearA to yearB range together with the entity name. Standard functions
     are used to find the statistics
-    :param entity:
+    :param entity: Entity for which stat is to be calculated
     :param yearA: start year
     :param yearB: end year
-    :param data:
-    :return:
+    :param data: Dataset
+    :return: None
     '''
 
     res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB) & (data['Entity'] == entity), :]
@@ -151,7 +150,7 @@ def entityStatistics(entity, yearA, yearB, data):
     print('Median: {}'.format(res.median()['Life expectancy (years)']))
     print('Maximum: {}'.format(res.max()['Life expectancy (years)']))
     print('Minimum: {}'.format(res.min()['Life expectancy (years)']))
-    print('Standard Dev.: {}'.format(res.std()['Life expectancy (years)']))
+    print('Standard Dev.: {}'.format(round(res.std(),3)['Life expectancy (years)']))
     print('----------------------------------------------------------------------------------------------')
 
     return
@@ -161,11 +160,10 @@ def globalStatistics(yearA, yearB, data):
     '''
     Uses lambda function to select the rows within the yearA to yearB range. Standard functions
     are used to find the statistics
-    :param entity:
     :param yearA: start year
     :param yearB: end year
-    :param data:
-    :return:
+    :param data: Dataset
+    :return: None
     '''
 
     res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
@@ -175,7 +173,7 @@ def globalStatistics(yearA, yearB, data):
     print('Median: {}'.format(res.median()['Life expectancy (years)']))
     print('Maximum: {}'.format(res.max()['Life expectancy (years)']))
     print('Minimum: {}'.format(res.min()['Life expectancy (years)']))
-    print('Standard Dev.: {}'.format(res.std()['Life expectancy (years)']))
+    print('Standard Dev.: {}'.format(round(res.std(),3)['Life expectancy (years)']))
     print('----------------------------------------------------------------------------------------------')
 
     return
@@ -186,11 +184,10 @@ def annualChangeStatistics(yearA, yearB, data):
     Uses lambda function to select the rows within the yearA to yearB range together with the entity name. The selected
     data is then iterated over with selecting consecutive year rows. That represents the annual change. Median of all such
     change values is estimated using standard functions
-    :param entity:
     :param yearA: start year
     :param yearB: end year
-    :param data:
-    :return:
+    :param data: dataset
+    :return: None
     '''
 
     acData = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
@@ -207,7 +204,7 @@ def annualChangeStatistics(yearA, yearB, data):
             res = res.append({'Change':current_row[3]-previous_row[3]}, ignore_index=True)
 
     print('----------------------------------------------------------------------------------------------')
-    print('The global median life expectancy annual change from year {0} to {1} is {2}'.format(yearA, yearB, res.median()['Change']))
+    print('The global median life expectancy annual change from year {0} to {1} is {2}'.format(yearA, yearB, round(res.median(),2)['Change']))
     print('----------------------------------------------------------------------------------------------')
 
     return
@@ -220,12 +217,12 @@ def stabilityStatistics(yearA, yearB, data):
     :param yearA: Start year
     :param yearB: End year
     :param data: dataset
-    :return:
+    :return: None
     '''
 
 
-    test = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), ['Entity', 'Life expectancy (years)']]
-    resEntity = test.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].min(), :]
+    res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), ['Entity', 'Life expectancy (years)']]
+    resEntity = res.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].min(), :]
 
     print('----------------------------------------------------------------------------------------------')
     print('The entity with most stable life expectancy between {0} and {1} is {2}'.format(yearA, yearB, resEntity.index[0]))
@@ -294,7 +291,7 @@ def calcPercent(data):
     '''
     This function simply estimates the percent increase by taking diff of max and min and dividing by min
     :param data: dataset
-    :return:
+    :return: None
     '''
 
     data['Life expectancy (years)'] = (data['Life expectancy (years)'].max() - data['Life expectancy (years)'].min()) * 100 / (data['Life expectancy (years)'].min())
@@ -314,7 +311,7 @@ def quickestIncreaseStatistics(yearA, yearB, data):
     :param yearA: Start year
     :param yearB: End year
     :param data: Dataset
-    :return:
+    :return: None
     '''
 
     res = pd.DataFrame({'Entity1':[],'Life expectancy (years)':[]})
@@ -364,6 +361,7 @@ if __name__ == "__main__":
     winData[list(dataset.columns)[0]] = dataset[list(dataset.columns)[0]]
     winData[list(dataset.columns)[1]] = dataset[list(dataset.columns)[1]]
     winData[list(dataset.columns)[2]] = dataset[list(dataset.columns)[2]]
+    winData['Life expectancy (years)'] = round(winData['Life expectancy (years)'],2)
 
     print("Hello we will ask you to input a few values to get the module started")
 
