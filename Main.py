@@ -34,28 +34,30 @@ def inputYears():
 
 ######Cleaning
 
-def countNulls(df=dataset):
+def countNulls(data=dataset):
 
     '''
     This function calculates the null values in the dataset on every column and reports the null values in counts and percentage
     :param df: Dataset
     :return:
     '''
-    df_cols = list(df.columns)
-    cols_total_count = len(list(df.columns))
-    cols_count = 0
+    col = list(data.columns)
+    totalCols = len(list(data.columns))
+    colCountNulls = 0
+    nullCount = 0
 
     print('----------------------------------------------------------------------------------------------')
-    for loc, col in enumerate(df_cols):
-        null_count = df[col].isnull().sum()
-        total_count = df[col].isnull().count()
-        percent_null = round(null_count/total_count*100, 2)
+    for num, column in enumerate(col):
 
-        if null_count > 0:
-            cols_count += 1
-            print('{} column has {} null values: {}% null'.format(loc, col, null_count, percent_null))
-        cols_percent_null = round(cols_count/cols_total_count*100, 2)
-    print('Out of {} total columns, {} contain null values; {}% columns contain null values.'.format(cols_total_count, cols_count, cols_percent_null))
+        nullCount = data[column].isnull().sum()
+
+        if nullCount > 0:
+
+            colCountNulls = colCountNulls + 1
+
+            print('{0} column \'{1}\' contains null values equal to {2}'.format(num, column, nullCount))
+
+    print('{} columns contain null values; {} is the total number of columns'.format(colCountNulls, totalCols))
     print('----------------------------------------------------------------------------------------------')
 
     return
@@ -71,7 +73,7 @@ def showOutliers(data=dataset,show_plot=False):
 
     if show_plot == True:
         column = data[list(data.columns)[3]]
-        plt.figure(figsize=(15, 40))
+        plt.figure(figsize=(15, 15))
         plt.subplot(2,1,1)
         plt.boxplot(column)
         plt.title('Boxplot')
@@ -89,16 +91,17 @@ def countOutliers(data=dataset):
     '''
 
     col = list(data.columns)[3]
-    print(15*'-' + col + 15*'-')
-    q75, q25 = np.percentile(data[col], [75, 25])
-    iqr = q75 - q25
-    min_val = q25 - (iqr*1.5)
-    max_val = q75 + (iqr*1.5)
-    outlier_count = len(np.where((data[col] > max_val) | (data[col] < min_val))[0])
-    outlier_percent = round(outlier_count/len(data[col])*100, 2)
+
+    quantile75, quantile25 = np.percentile(data[col], [75, 25])
+
+    lowerLimit = quantile25 - ((quantile75-quantile25) *1.5)
+    upperLimit = quantile75 + ((quantile75-quantile25) *1.5)
+
+    countOutlier = len(np.where((data[col] > upperLimit) | (data[col] < lowerLimit))[0])
+    percentOutlier = round(countOutlier/len(data[col])*100, 2)
     print('----------------------------------------------------------------------------------------------')
-    print('Number of outliers: {}'.format(outlier_count))
-    print('Percent of data that is outlier: {}%'.format(outlier_percent))
+    print('Outliers: {}'.format(countOutlier))
+    print('Outlier Percent: {}%'.format(percentOutlier))
     print('----------------------------------------------------------------------------------------------')
 
 def winsorizeData(dataN, data=dataset, lower_limit=0.0, upper_limit=0.0, show_plot=False):
@@ -209,8 +212,16 @@ def annualChangeStatistics(yearA, yearB, data):
 
 def stabilityStatistics(yearA, yearB, data):
 
+    '''
+    This function first collects the rows of data that fall within the (yearA,yearB) range. We then club them together with
+    'Entity' and find out the max and min for each entity. The function then picks out the row with minimum range (most stable).
+    :param yearA: Start year
+    :param yearB: End year
+    :param data: dataset
+    :return:
+    '''
 
-    data['Entity1'] = data['Entity']
+
     test = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), ['Entity', 'Life expectancy (years)']]
     resEntity = test.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].min(), :]
 
@@ -223,8 +234,13 @@ def stabilityStatistics(yearA, yearB, data):
 def percentileAnnualStatistics(yearA, yearB, data):
 
     '''
-    test = data.loc[lambda data: (data['Year'] == yearA) | (data['Year'] == yearB), ['Entity', 'Life expectancy (years)']]
-    test = test.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] > x['Life expectancy (years)'].quantile(0.95), :]
+    This function first picks up those rows which fall in (yearA,yearB) range. It then iterates over the rows with the
+    condition that we compare the consecutive years (annual change). When it is grouped by entity, the function finds out
+    the rows for which lie above the 95% and finally prints them out
+    :param yearA: Start year
+    :param yearB: End year
+    :param data: dataset
+    :return:
     '''
 
     test = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
@@ -252,6 +268,15 @@ def percentileAnnualStatistics(yearA, yearB, data):
 
 def highestIncreaseStatistics(yearA, yearB, data):
 
+    '''
+    This function collects all the rows which lie in the range (yearA, yearB). Next grouping by entity, the max and min
+    is found. The one entity with max range is assumed to give the highest increase in range(yearA, yearB).
+    :param yearA: start year
+    :param yearB: end year
+    :param data: dataset
+    :return:
+    '''
+
     test = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), ['Entity', 'Life expectancy (years)']]
     test = test.groupby(['Entity'])
     test = test.apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].max(), :]
@@ -262,13 +287,33 @@ def highestIncreaseStatistics(yearA, yearB, data):
 
     return
 
-def calc(data):
+def calcPercent(data):
+
+    '''
+    This function simply estimates the percent increase by taking diff of max and min and dividing by min
+    :param data: dataset
+    :return:
+    '''
 
     data['Life expectancy (years)'] = (data['Life expectancy (years)'].max() - data['Life expectancy (years)'].min()) * 100 / (data['Life expectancy (years)'].min())
 
     return data
 
 def quickestIncreaseStatistics(yearA, yearB, data):
+
+    '''
+    This function first picks up all the rows that lie within the limits specified (yearA, yearB). It then generates a
+    unique set of those years that lie in the above range (since multiple entities might have the same year). It then
+    iterates all over those unique years. For every pair of the unique year set, it picks up all the entities that have
+    two data points (one at each of those paired years). Then, it calculates the percent increase for each entity, checks
+    if it is greater than 40%. To find out the quickest increase, it divides the percent increase by years taken to
+    achieve that change. Since we need to find the entity that made that change happen the quickest, the function sorts
+    the parsed rows and picks up the top 3 entities. Thus giving the ones with a quickest change.
+    :param yearA: Start year
+    :param yearB: End year
+    :param data: Dataset
+    :return:
+    '''
 
     res = pd.DataFrame({'Entity1':[],'Life expectancy (years)':[]})
     data['Entity1'] = data['Entity']
