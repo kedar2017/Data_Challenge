@@ -2,7 +2,8 @@
 
 The documentation is written as follows.
 
-The first section discusses the packages needed for running the modules. Next, an example usage is shown. Following which the data cleaning is discussed and finally the data exploration.
+The first section discusses the packages needed for running the modules. Next, an example usage is shown.
+Following which the data cleaning is discussed and finally the data exploration.
 
 ## Installation
 
@@ -93,7 +94,8 @@ Western Sahara
 2. Missing values
 3. Outliers
 
-Variables are studied by looking at what each of the variables signify and what are there data types. The following is used for the same:
+Variables are studied by looking at what each of the variables signify and what are there data types. The following is
+used for the same:
 
 ```python
 dataset = pd.read_csv('/datasets_564980_1026099_life-expectancy.csv')
@@ -241,7 +243,8 @@ The number of such null values are found out using the following function. As sh
 def countNulls(data=dataset):
 
     '''
-    This function calculates the null values in the dataset on every column and reports the null values in counts and percentage
+    This function calculates the null values in the dataset on every column and reports the null
+    values in counts and percentage
     :param df: Dataset
     :return: None
     '''
@@ -342,11 +345,11 @@ Upon observation, it looks like the continent 'entities' have year data going be
 
 ![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_3.png)
 
-Now looking at the data after 1950, it sums up to ~17000 data points.
+Now looking at the data after 1950 (below), it sums up to ~17000 data points.
 
 ![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_4.png)
 
-Looking at the data before 1950, it sums up to just < 2000 data points. Which is <5% of the total data. So
+Looking at the data before 1950 (below), it sums up to just < 2000 data points. Which is <5% of the total data.
 
 ![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_5.png)
 
@@ -782,3 +785,47 @@ It has to be noted that nowhere we have made assumptions about there being NO da
 the for each entity, the years have to be sorted. There may be a case where you have no data let's say for years
 [1980,1995, 2000]. This challenge has been programmed such that it doesn't necessarily care about randomly missing values,
 as long as they are in order. The cases where there are null values, has already been checked.
+
+Another point to note is that nowhere in the program we loop through the years like we normally do in using a for loop.
+
+```python
+
+for i in range(n):
+
+    print(i)
+
+```
+
+We only loop through the years that EXIST in the data set without wasting time for non-existing year values. And this
+is purely due to the way how efficiently the pandas library has been built.
+
+## Summary
+
+We will summarize what has been through the above discussion.
+
+1. The data was studied to know what exactly it signifies. We looked at the total data point comparison
+between different columns. Turns out there were a few missing values on the 'Code' column. The program is capable
+of detecting and reporting the missing values in each column. But missing 'Code' values meant that they were for the
+continents. There was an assumption made that we would not exclude the continents from colliding with other countries
+data. This is just for completing the challenge. Another way to go about it would be to smartly exclude the continent
+data that collides with the countries that come under it
+2. Next, we looked at the actual values for the life expectancies. The observation made was that the minimum number
+on the life expectancy didn't make sense. This is purely an assumption. No supporting data whatsoever. But for the
+challenge, it is assumed to be really out of the limits. We make use of Winsorization technique to put limits on what
+life expectancy numbers should look like. The limit is essential based off of the interquantile range. Any values that
+lie above or below the limits are just normalized to the upper and lower limits. The next thing we did was looking
+at the year. It seems like there is consistently 243 values for each of the year from 1950 to 2019, which equates to
+18000 points. Versus for some of the continents, there are year points that date back to 1500's. The counts for years
+less than 1950 is very low and inconsistent. Around 2000 in total. And including them as part of the statistical
+analysis doesn't make sense. So, the way we go about is that we just make a constraint on what values can be entered
+by the user. Other approach is to just chop them off the data.
+3. Diving into the analysis, we have looked at the following:
+  a. Entity based statistics
+  b. Global statistics
+  c. Annual change
+  d. Stability
+  e. Annual change percentile
+  f. Increased expectancy
+  g. Quickest increase
+
+4. The code for each of the above is clealy discussed while making an effort to keep the code clean and clear
