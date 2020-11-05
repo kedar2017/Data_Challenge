@@ -225,16 +225,17 @@ winData['Life expectancy (years)'] = round(winData['Life expectancy (years)'],2)
 
 ```
 
-Next, we look at the missing values. We see from the above info() that there are 19028 values for each
+Next, we look at the missing values. We see from the above info() that there are **19028** values for each
 'Entity', 'Year' and 'Life expectancy' but only 18445 values for 'Code'. Which means there are quite a few 'Code' rows with nulls.
 Upon looking up closely it seems that the missing 'Code' values correspond to the continents and rest of the codes
 with existing values are for countries. This doesn't have a great impact on our calculations since we are looking up
-everything with respect to 'Entities' and hence both continents and countries are considered as separate entities.
+everything with respect to 'Entities'.
+
 The number of such null values are found out using the following function. As shown, there is only one column ('Code')
  with Null values. Again, it may sound a little weird to analyze the data with entities like 'Asia', 'Europe', 'Americas',
  "World" etc. because everything is a part of the world and countries within a specific continent could have been double
  counted due to a few entities signifying a continent. But for the sake of this challenge, everything is just assumed
- to be a separate entity.
+ to be a separate entity. Given more time, a separate discussion can be made as to how to exclude any colliding data.
 
 ```python
 def countNulls(data=dataset):
@@ -272,7 +273,8 @@ def countNulls(data=dataset):
 
 ```
 
-Now that we looked at missing values, we can try to figure out if there are any outliers in our data. Let's look closely at the above describe() function.
+Now that we looked at missing values, we can try to figure out if there are any outliers in our data. Let's look closely
+at the above describe() function.
 
 ```python
 
@@ -295,7 +297,7 @@ max     2019.000000                86.751000
 The mean, min and max values for the 'Year' seem to be fine. We have to consider the minimum value '1543' for the year as
 it is one of the extreme points.
 But, looking at the 'Life Expectancy' there seems to be something worth discussing. The minimum life expectancy number is
-close to 17. Which seems a bit odd.
+close to **17**. Which seems a bit odd.
 This is  just an assumption that the minimum number doesn't make sense in some cases. But in reality, a more rigorous approach
 can be implemented to see what should be the exact criterion (country specific, year specific) to filter out the numbers
 that don't make sense.
@@ -332,8 +334,55 @@ def showOutliers(data=dataset,showFigure=False):
 
 ![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_2.png)
 
+Before we dive into outliers, there is one thing to point out. Some of the queries on this data might not make sense.
+Let's take an example. Suppose we want to know the global median of life expectancy or median of life expectancy increase
+from year 1700 to 2019. It is obvious that not all entities might have the data from 1700 to 1900. So even if the code
+is able to handle and flag such cases, the significance of statistical metrics (std, mean) is lost in that case.
+Upon observation, it looks like the continent 'entities' have year data going before 1950. See figure below.
 
-We consider the metric 'Interquartile Range' to count how many values lie outside the range and mark them as 'outliers'.
+![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_3.png)
+
+Now looking at the data after 1950, it sums up to ~17000 data points.
+
+![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_4.png)
+
+Looking at the data before 1950, it sums up to just < 2000 data points. Which is <5% of the total data. So
+
+![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_5.png)
+
+So, only queries that have start year above **1950** make sense for most of the statistics. We always have the option of
+chopping out the data that doesn't really make sense. Instead, easier solution is to limit the search queries input by
+the user to a range that makes sense. Therefore as shown below, the queries are taken care by the following code:
+
+```python
+def inputYears():
+    '''
+    This function asks the user to input yearA, yearB and entity. It checks for simple sanity and if okay, simply returns
+    :return: None
+    '''
+
+    yearA = 0
+    yearB = 0
+
+    while True:
+
+        yearA = input("Please input the starting year \n")
+        yearA = int(yearA)
+        yearB = input("Please input the ending year \n")
+        yearB = int(yearB)
+
+        if (yearA >= 1950 and yearA <= 2019) and (yearB >= 1950 and yearB <= 2019) and (yearA < yearB):
+            break
+
+        else:
+            print("You have entered the wrong values for year. Please make sure the years are in range 1950 to 2019")
+
+    return (yearA, yearB)
+
+
+```
+
+We consider the metric **'Interquartile Range'** to count how many values lie outside the range and mark them as 'outliers'.
 We consider some multiple of the IQR as a measure for counting the outliers.
 
 multiple = 1.5 for the below function
@@ -342,7 +391,8 @@ multiple = 1.5 for the below function
 
 def countOutliers(data=dataset):
     '''
-    Counts outlier data points. The interquantile range is used as metric in setting the limits on the data. A multiple (1.5) in this case is used
+    Counts outlier data points. The interquantile range is used as metric in setting the limits on the data.
+    A multiple (1.5) in this case is used
     to scale the interquartile range to set the limits
     :param data: dataset
     :return: None
@@ -363,9 +413,9 @@ def countOutliers(data=dataset):
     print('----------------------------------------------------------------------------------------------')
 ```
 
-In order to deal with the outliers, we follow a technique called 'Winsorization' to limit the upper and lower bounds.
+In order to deal with the outliers, we follow a technique called **'Winsorization'** to limit the upper and lower bounds.
 We check the limits as per the above formula and whichever values lie outside this range are simply made equal to the
-lower and upper limits using the mstats.winsorize() function.
+lower and upper limits using the **mstats.winsorize()** function.
 
 ```python
 
@@ -445,13 +495,12 @@ def entityStatistics(entity, yearA, yearB, data):
 ```
 
 The above function first selects all the data that is within the given year range (yearA, yearB). It then compares the
-'entity' column with the value provided for which we want to estimate the statistics.
+**'entity'** column with the value provided for which we want to estimate the statistics.
 
 The res object is then queried with max, min, median etc. to give out the results for that particular entity.
 
-
 Next, to estimate the global statistics, we just select the rows with 'Year' column values within the range provided.
-The statistics are then printed out by querying the res object.
+The statistics are then printed out by querying the res object. No concern here with the 'entity'.
 
 ```python
 
@@ -481,19 +530,20 @@ def globalStatistics(yearA, yearB, data):
 ```
 
 Moving to the stability statistics, we again look at the rows with values for 'Year' columns that lie in the range
-provided.
+provided (yearA, yearB)
 
 We then estimate the stability of the life expectancy increase by looking at the maximum and minimum values within
-that year range for each entity. The entity with the minimum range (maximum - minimum) value is selected to be the one having highest
-stability. See the funtion below:
+that year range for each entity. The entity with the minimum range **(max - min)** value is selected to be the one
+having highest stability. See the funtion below:
 
 ```python
 
 def stabilityStatistics(yearA, yearB, data):
 
     '''
-    This function first collects the rows of data that fall within the (yearA,yearB) range. We then club them together with
-    'Entity' and find out the max and min for each entity. The function then picks out the row with minimum range (most stable).
+    This function first collects the rows of data that fall within the (yearA,yearB) range. We then club them together
+    with 'Entity' and find out the max and min for each entity. The function then picks out the row with minimum range
+    (most stable).
     :param yearA: Start year
     :param yearB: End year
     :param data: dataset
@@ -502,7 +552,8 @@ def stabilityStatistics(yearA, yearB, data):
 
 
     res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), ['Entity', 'Life expectancy (years)']]
-    resEntity = res.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].min(), :]
+    resEntity = res.groupby(['Entity']).apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] ==
+    x['Life expectancy (years)'].min(), :]
 
     print('----------------------------------------------------------------------------------------------')
     print('The entity with most stable life expectancy between {0} and {1} is {2}'.format(yearA, yearB, resEntity.index[0]))
@@ -514,7 +565,7 @@ def stabilityStatistics(yearA, yearB, data):
 
 The next step is to discuss the statistics related to increase in expectancy over a range of years. Same logic applies
 here like the earlier function. We look at the maximum and minimum values within the year range provided. Then apply
-the maximum of the difference/increase (max - min). The entity with that highest increase is then selected.
+the maximum of the difference/increase **(max - min)**. The entity with that highest increase is then selected.
 
 ```python
 
@@ -531,7 +582,8 @@ def highestIncreaseStatistics(yearA, yearB, data):
 
     test = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), ['Entity', 'Life expectancy (years)']]
     test = test.groupby(['Entity'])
-    test = test.apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].max(), :]
+    test = test.apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy(years)']
+    .max(), :]
 
     print('----------------------------------------------------------------------------------------------')
     print('The entity with highest increase in expectancy between {0} and {1} is {2}'.format(yearA, yearB, test.index[0]))
@@ -543,7 +595,8 @@ def highestIncreaseStatistics(yearA, yearB, data):
 Moving on to the annual change statistics, the logic used here is that we start with the provided year range.
 For each of the year selected in that range, we estimate the change in life expectancy over the one year period.
 All the annual life expectancy changes for each of the rows (within the year range provided) are recorded. The median
-is then estimated for the above recorded rows.
+is then estimated for the above recorded rows. We check that the year within the current row is consecutive to the one
+from earlier row (annual change).
 
 ```python
 
@@ -573,14 +626,15 @@ def annualChangeStatistics(yearA, yearB, data):
             res = res.append({'Change':current_row[3]-previous_row[3]}, ignore_index=True)
 
     print('----------------------------------------------------------------------------------------------')
-    print('The global median life expectancy annual change from year {0} to {1} is {2}'.format(yearA, yearB, round(res.median(),2)['Change']))
+    print('The global median life expectancy annual change from year {0} to {1} is {2}'.format(yearA, yearB,
+    round(res.median(),2)['Change']))
     print('----------------------------------------------------------------------------------------------')
 
     return
 
 ```
 
-As shown above, the acData stores the rows which have 'Year' within the range of years provided (yearA, yearB).
+As shown above, the **acData** stores the rows which have 'Year' within the range of years provided (yearA, yearB).
 A res data frame is created that holds the 'Change' column. Going row by row, the change is calculated only for rows
 where the delta year is equal to 1 (annual change). This eliminates the cases in which there are different entities on
 adjacent rows. The assumption is that all the 'year' values for each entity are arranged in increasing order.
@@ -591,11 +645,11 @@ Going through the res rows that holds the annual changes, we simply call the med
 Next, we look at the percentile annual change statistic. The approach is exactly similar to the above function.
 For each of the year selected in that range, we estimate the change in life expectancy over the one year period.
 All the annual life expectancy changes for each of the rows (within the year range provided) are recorded. The median
-is then estimated for the above recorded rows. oing row by row, the change is calculated only for rows
+is then estimated for the above recorded rows. Going row by row, the change is calculated only for rows
 where the delta year is equal to 1 (annual change). This eliminates the cases in which there are different entities on
-adjacent rows.
+adjacent rows. The annual change numbers are recorded on a separate column 'change'.
 
-Next, we look at the maximum annual change in expectancy (stored in row annualD) grouped by 'Entity'. So we are now
+Next, we look at the maximum annual change in expectancy (stored in row annualD) grouped by **'Entity'**. So we are now
 left with every row having an entity together with their own maximum annual change over the course of given range of years.
 
 Next, among the entities, we find the 95% quantile number. Whichever entities exceed that quantile number are then selected
@@ -625,12 +679,15 @@ def percentileAnnualStatistics(yearA, yearB, data):
         previous_row = test.iloc[i - 1]
 
         if current_row[2] == previous_row[2] + 1:
-            annualD = annualD.append({'Entity': current_row[0], 'change': current_row[3] - previous_row[3]}, ignore_index=True)
+            annualD = annualD.append({'Entity': current_row[0], 'change': current_row[3] - previous_row[3]},
+            ignore_index=True)
 
-    annualD = annualD.groupby(['Entity']).apply(lambda x: x.max()).loc[lambda x: x['change'] > x['change'].quantile(0.95), :]
+    annualD = annualD.groupby(['Entity']).apply(lambda x: x.max()).loc[lambda x: x['change'] > x['change']
+    .quantile(0.95), :]
 
     print('----------------------------------------------------------------------------------------------')
-    print('The following entities reported above 95th percentile highest annual life expectancy increase between {0} and {1}: '.format(yearA, yearB))
+    print('The following entities reported above 95th percentile highest annual life expectancy increase between {0} and {1}: '
+    .format(yearA, yearB))
 
     for i in annualD.index:
         print(i)
@@ -641,36 +698,36 @@ def percentileAnnualStatistics(yearA, yearB, data):
 ```
 
 Moving onto the most time consuming computation, finding the entity with quickest increase in the life expectancy
-by over 40%.
+by over **40%**.
 
-The logic used for this is as follows. A res dataframe is first generated.
+The logic used for this is as follows. A **res** dataframe is first generated.
 
 This function first picks up all the rows that lie within the limits specified (yearA, yearB). It then generates a
 unique set of those years that lie in the above range (since multiple entities might have the same year). It then
-iterates all over those unique years. For every pair of the unique year set, it picks up all the entities that have
-two data points (one at each of those paired years) for a particular (i,j) pair. The life
-expectancy increase is estimated going from year i to year j for each of the entity. The percent increase in the
+iterates all over those unique years. For every pair of the unique year set, we iterate in an inner and outer loop.
+We pick up all the entities that have two data points (one at each of those paired years) for a particular (i,j) pair.
+The life expectancy increase is estimated going from year i to year j for each of the entity. The percent increase in the
 expectancy is calculated for this particular (i,j) pair as:
 
-% increase = (expectancy[j] - expectancy[i]) / (expectancy[i])
+**% increase = (expectancy[j] - expectancy[i]) / (expectancy[i])**
 
 Note above that we have used the fact that expectancy[j] = max() and expectancy[i] = min() for a particular entity.
 Assumption is that since we are looking at 40% increased numbers, the expectancy[j] has to be the max value and expectancy[i] the
 minimum value for each entity that has data between years (i to j). Percent increase is hence estimated.
-Next, we also have to estimate the 'quickest' increase. Hence, the entities for which the percent increase is greater than
-40% is collected together. The obtained number is then divided by (j-i) [the difference in year]. So, we ideally want to
+Next, we also have to estimate the **'quickest'** increase. Hence, the entities for which the percent increase is greater than
+40% is collected together. The obtained number is then divided by **(j-i)** [the difference in year]. So, we ideally want to
 find out which entity has the highest value for (% increase)/ (j-i).
 
 The above process is iterated for different values of i and j that run over an outer and inner loop on the year range.
 
-Finally, we sort the values obtained from the above process. Note that, there will be multiple values for a single entity
+Finally, we **sort** the values obtained from the above process. Note that, there will be multiple values for a single entity
 obtained because multiple (i,j) will get a percent increase > 40% for a single entity. So, after sorting the values, the
 top 3 unique entities are selected. Just to make it easier to code, an extra utility column ('Entity1') has been added
-so that the entity values are not lost after the groupby() function is used. The rest of the coding steps, speak for themselves.
+so that the entity values are not lost after the groupby() function is used. The rest of the coding steps, speaks for itself.
 
 Note that this solution might be time consuming. The reason is that, we need to loop through all the rows that lie within
 the year range provided. Second, for each of those years that lie in the range, we need to figure out which pair of years
-will give us a maximum increase in a minimum time. The only optimization performed here is that we don't need to go through
+will give us a **maximum increase in a minimum time**. The only **optimization** performed here is that we don't need to go through
 the entire range of years (yearA, yearB). We just select the rows that are in the provided range and select unique counts of
 such years obtained. Once we have the unique years, we can loop through them using two pointers and for each entity, calculate the
 percent change going from pointer i to pointer j.
@@ -701,7 +758,9 @@ def quickestIncreaseStatistics(yearA, yearB, data):
     for i in range(len(yearUnique)-1):
         for j in range(i+1, len(yearUnique)):
 
-            test = data.loc[lambda data: (data['Year'] == yearUnique[i]) | (data['Year'] == yearUnique[j]), ['Entity','Entity1','Year','Life expectancy (years)']].groupby(['Entity'])[['Entity1','Life expectancy (years)']]
+            test = data.loc[lambda data: (data['Year'] == yearUnique[i]) | (data['Year'] == yearUnique[j]),
+            ['Entity','Entity1','Year','Life expectancy (years)']].groupby(['Entity'])[['Entity1'
+            ,'Life expectancy (years)']]
             test = test.apply(calcPercent)
             test = pd.DataFrame(test)
             test = test.loc[lambda x: x['Life expectancy (years)'] > 40, :]
@@ -719,5 +778,7 @@ def quickestIncreaseStatistics(yearA, yearB, data):
     return
 ```
 
-
-
+It has to be noted that nowhere we have made assumptions about there being NO data between consecutive years. Just that
+the for each entity, the years have to be sorted. There may be a case where you have no data let's say for years
+[1980,1995, 2000]. This challenge has been programmed such that it doesn't necessarily care about randomly missing values,
+as long as they are in order. The cases where there are null values, has already been checked.

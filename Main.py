@@ -23,14 +23,13 @@ def inputYears():
         yearB = input("Please input the ending year \n")
         yearB = int(yearB)
 
-        if (yearA >= 1550 and yearA <= 2019) and (yearB >= 1550 and yearB <= 2019) and (yearA < yearB):
+        if (yearA >= 1950 and yearA <= 2019) and (yearB >= 1950 and yearB <= 2019) and (yearA < yearB):
             break
 
         else:
-            print("You have entered the wrong values for year")
+            print("You have entered the wrong values for year. Please make sure the years are in range 1950 to 2019")
 
     return (yearA, yearB)
-
 
 ######Cleaning
 
@@ -76,9 +75,12 @@ def showOutliers(data=dataset,showFigure=False):
         plt.figure(figsize=(15, 15))
         plt.subplot(2,1,1)
         plt.boxplot(column)
+        plt.ylabel('Life Expectancy (Years)', fontsize=18)
         plt.title('Boxplot')
         plt.subplot(2,1,2)
         plt.hist(column)
+        plt.xlabel('Life Expectancy (Years)', fontsize=18)
+        plt.ylabel('Frequency', fontsize=16)
         plt.title('Histogram')
         plt.show()
 
@@ -123,9 +125,11 @@ def winsorizeData(dataN, data=dataset, lowerLimit=0.0, upperLimit=0.0, showFigur
         plt.figure(figsize=(10,5))
         plt.subplot(121)
         plt.boxplot(data[col])
+        plt.ylabel('Life Expectancy (Years)', fontsize=18)
         plt.title('original {}'.format(col))
         plt.subplot(122)
         plt.boxplot(dataN[col])
+        plt.ylabel('Life Expectancy (Years)', fontsize=18)
         plt.title('modified {}'.format(col))
         plt.show()
 
@@ -349,12 +353,12 @@ if __name__ == "__main__":
     #plt.show()
 
     countNulls()
-    showOutliers()
+    showOutliers(showFigure=True)
     countOutliers()
 
     winData = dataset.iloc[:, 0:4]
 
-    winsorizeData(winData, dataset, lowerLimit=0.1, upperLimit=0.0)
+    winsorizeData(winData, dataset, lowerLimit=0.1, upperLimit=0.0,showFigure=True)
 
     col = list(winData.columns)
 
