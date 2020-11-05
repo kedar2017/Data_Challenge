@@ -353,12 +353,12 @@ if __name__ == "__main__":
     #plt.show()
 
     countNulls()
-    showOutliers(showFigure=True)
+    showOutliers(showFigure=False)
     countOutliers()
 
     winData = dataset.iloc[:, 0:4]
 
-    winsorizeData(winData, dataset, lowerLimit=0.1, upperLimit=0.0,showFigure=True)
+    winsorizeData(winData, dataset, lowerLimit=0.1, upperLimit=0.0,showFigure=False)
 
     col = list(winData.columns)
 

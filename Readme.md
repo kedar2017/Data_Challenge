@@ -829,3 +829,123 @@ by the user. Other approach is to just chop them off the data.
   g. Quickest increase
 
 4. The code for each of the above is clealy discussed while making an effort to keep the code clean and clear
+5. The major chunk of this challenge is 'coding'. Given the limited time, I have spent most of my efforts to make
+the code look neat, documentation, variable names. I have made an effort to code it in the most meaningful way for
+each of the functions.
+6. Let's look at another sample output below:
+
+```python
+----------------------------------------------------------------------------------------------
+1 column 'Code' contains null values equal to 583
+1 columns contain null values; 4 is the total number of columns
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+Outliers: 16
+Outlier Percent: 0.08%
+----------------------------------------------------------------------------------------------
+Hello we will ask you to input a few values to get the module started
+Please input the starting year
+1975
+Please input the ending year
+2000
+Please input the entity
+Austria
+----------------------------------------------------------------------------------------------
+The following are the statistics for Austria between years 1975 and 2000
+Median: 74.93
+Maximum: 78.24
+Minimum: 71.43
+Standard Dev.: 2.102
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+The following are the global statistics between years 1975 and 2000
+Median: 68.45
+Maximum: 81.6
+Minimum: 42.06
+Standard Dev.: 9.794
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+The global median life expectancy annual change from year 1975 to 2000 is 0.26
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+The entity with most stable life expectancy between 1975 and 2000 is Sierra Leone
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+The following entities reported above 95th percentile highest annual life expectancy increase between 1975 and 2000:
+Algeria
+Bangladesh
+Cambodia
+Iran
+Iraq
+Oman
+Rwanda
+Saudi Arabia
+Senegal
+Timor
+Tunisia
+Vietnam
+Yemen
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+The entity with highest increase in expectancy between 1975 and 2000 is Maldives
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+The entities with quickest increase in expectancy by 40% are as follows
+Timor
+Yemen
+Maldives
+----------------------------------------------------------------------------------------------
+```
+
+7. There are a lot more interesting things that can be derived **USING** the module that has been created.
+Interesting observations could be derived varying the time window (user input) and looking at how the medians, means
+for each of those windows behaves. It can be plotted (again using this very module) to create all sorts of variations.
+The other interesting observations could also be derived from using this module to output which entity has reported
+the highest increase in expectancy from 1950 to 2019 (most recent years), which entities gave the quickest increase
+in life expectancy through out these years and which entity reported the most stable expectancy until this year.
+8. From the above bullet, if we look at some results for 1950 to 2019,
+
+The entity with most stable life expectancy between 1950 and 2019 is **American Samoa**
+
+Makes sense as it has very small population (~50000). And being an Oceanic country, we can't expect a rapid growth
+happening nor anything that could disastrously lead into large scale deaths.
+
+The entity with highest increase in expectancy between 1950 and 2019 is **South Korea**
+
+Again, makes sense because they started with really low expectancy numbers in midst of 20th century and rapid
+growth towards 2000's. Currently has a high expectancy of ~83.
+
+The entities with quickest increase in expectancy by 40% are as follows
+Rwanda
+Swaziland
+China
+
+Makes sense to have China on that list owing to it's growth in the recent times to become a world super power.
+
+The following entities reported above 95th percentile highest annual life expectancy increase between 1950 and 2019:
+Barbados
+Botswana
+Cambodia
+China
+Cook Islands
+French Polynesia
+Iran
+North Korea
+Russia
+Rwanda
+South Korea
+Swaziland
+Zimbabwe
+
+9. The module could also be used to learn and understand some historical events. This is more of 'Applying/Using'
+the module to derive interesting conclusions. We can study how a particular country's
+growth, industrialization and globalization helped to tick its expectancy numbers. We can also study what
+historical events lead to massive increases/decreases in a country's expectancy. Another interesting usage of this
+module is to look at correlations. We can look at how a particular country's expectancy numbers correlate with that
+of any other country (very similar approach to code this like the rest of the code here). The correlation can be
+helpful to understand the relations between two countries, geographies and also continents.
+
+But only limited things can be gotten out of anything when in a limited time constraint like we all are :)
+
+That said, I am extremely passionate to work for the best automotive company in the world to develop the best
+self-driving platform ever built! Hopefully this module conveys what it wa meant to convey.
