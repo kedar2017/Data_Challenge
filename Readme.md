@@ -394,8 +394,7 @@ multiple = 1.2 for the below function
 
 def countOutliers(data=dataset):
     '''
-    Counts outlier data points. The interquantile range is used as metric in setting the limits on the data.
-    A multiple (1.2) in this case is used
+    Counts outlier data points. The interquantile range is used as metric in setting the limits on the data. A multiple (1.2) in this case is used
     to scale the interquartile range to set the limits
     :param data: dataset
     :return: None
@@ -408,7 +407,7 @@ def countOutliers(data=dataset):
     lowerLimit = quantile25 - ((quantile75-quantile25) *1.2)
     upperLimit = quantile75 + ((quantile75-quantile25) *1.2)
 
-    countOutlier = len(np.where((data[col] > upperLimit) | (data[col] < lowerLimit))[0])
+    countOutlier = len(data.loc[lambda x: (x[col] > upperLimit) | (x[col] < lowerLimit), :])
     percentOutlier = round(countOutlier/len(data[col])*100, 2)
     print('----------------------------------------------------------------------------------------------')
     print('Outliers: {}'.format(countOutlier))

@@ -84,6 +84,8 @@ def showOutliers(data=dataset,showFigure=False):
         plt.title('Histogram')
         plt.show()
 
+    return
+
 def countOutliers(data=dataset):
     '''
     Counts outlier data points. The interquantile range is used as metric in setting the limits on the data. A multiple (1.2) in this case is used
@@ -99,12 +101,14 @@ def countOutliers(data=dataset):
     lowerLimit = quantile25 - ((quantile75-quantile25) *1.2)
     upperLimit = quantile75 + ((quantile75-quantile25) *1.2)
 
-    countOutlier = len(np.where((data[col] > upperLimit) | (data[col] < lowerLimit))[0])
+    countOutlier = len(data.loc[lambda x: (x[col] > upperLimit) | (x[col] < lowerLimit), :])
     percentOutlier = round(countOutlier/len(data[col])*100, 2)
     print('----------------------------------------------------------------------------------------------')
     print('Outliers: {}'.format(countOutlier))
     print('Outlier Percent: {}%'.format(percentOutlier))
     print('----------------------------------------------------------------------------------------------')
+
+    return
 
 def winsorizeData(dataN, data=dataset, lowerLimit=0.0, upperLimit=0.0, showFigure=False):
     '''
@@ -132,6 +136,8 @@ def winsorizeData(dataN, data=dataset, lowerLimit=0.0, upperLimit=0.0, showFigur
         plt.ylabel('Life Expectancy (Years)', fontsize=18)
         plt.title('modified {}'.format(col))
         plt.show()
+
+    return
 
 ########Exploration
 
