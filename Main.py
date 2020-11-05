@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import mstats
 import matplotlib.pyplot as plt
 
-dataset = pd.read_csv('/Users/kedjoshi/Desktop/datasets_564980_1026099_life-expectancy.csv')
+dataset = pd.read_csv('../datasets_564980_1026099_life-expectancy.csv')
 
 ######Input
 
@@ -86,7 +86,7 @@ def showOutliers(data=dataset,showFigure=False):
 
 def countOutliers(data=dataset):
     '''
-    Counts outlier data points. The interquantile range is used as metric in setting the limits on the data. A multiple (1.5) in this case is used
+    Counts outlier data points. The interquantile range is used as metric in setting the limits on the data. A multiple (1.2) in this case is used
     to scale the interquartile range to set the limits
     :param data: dataset
     :return: None
@@ -96,8 +96,8 @@ def countOutliers(data=dataset):
 
     quantile75, quantile25 = np.percentile(data[col], [75, 25])
 
-    lowerLimit = quantile25 - ((quantile75-quantile25) *1.5)
-    upperLimit = quantile75 + ((quantile75-quantile25) *1.5)
+    lowerLimit = quantile25 - ((quantile75-quantile25) *1.2)
+    upperLimit = quantile75 + ((quantile75-quantile25) *1.2)
 
     countOutlier = len(np.where((data[col] > upperLimit) | (data[col] < lowerLimit))[0])
     percentOutlier = round(countOutlier/len(data[col])*100, 2)
@@ -200,12 +200,12 @@ def annualChangeStatistics(yearA, yearB, data):
 
     for i in range(1, len(acData)):
 
-        current_row = acData.iloc[i]
-        previous_row= acData.iloc[i-1]
+        currentRow = acData.iloc[i]
+        previousRow= acData.iloc[i-1]
 
-        if (current_row[2] == previous_row[2] + 1):
+        if (currentRow[2] == previousRow[2] + 1):
 
-            res = res.append({'Change':current_row[3]-previous_row[3]}, ignore_index=True)
+            res = res.append({'Change':currentRow[3]-previousRow[3]}, ignore_index=True)
 
     print('----------------------------------------------------------------------------------------------')
     print('The global median life expectancy annual change from year {0} to {1} is {2}'.format(yearA, yearB, round(res.median(),2)['Change']))
@@ -246,17 +246,17 @@ def percentileAnnualStatistics(yearA, yearB, data):
     :return:
     '''
 
-    test = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
+    res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
 
     annualD = pd.DataFrame({'Entity': [], 'change': []})
 
-    for i in range(1, len(test)):
+    for i in range(1, len(res)):
 
-        current_row = test.iloc[i]
-        previous_row = test.iloc[i - 1]
+        currentRow = res.iloc[i]
+        previousRow = res.iloc[i - 1]
 
-        if current_row[2] == previous_row[2] + 1:
-            annualD = annualD.append({'Entity': current_row[0], 'change': current_row[3] - previous_row[3]}, ignore_index=True)
+        if currentRow[2] == previousRow[2] + 1:
+            annualD = annualD.append({'Entity': currentRow[0], 'change': currentRow[3] - previousRow[3]}, ignore_index=True)
 
     annualD = annualD.groupby(['Entity']).apply(lambda x: x.max()).loc[lambda x: x['change'] > x['change'].quantile(0.95), :]
 
@@ -280,12 +280,12 @@ def highestIncreaseStatistics(yearA, yearB, data):
     :return:
     '''
 
-    test = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), ['Entity', 'Life expectancy (years)']]
-    test = test.groupby(['Entity'])
-    test = test.apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].max(), :]
+    res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), ['Entity', 'Life expectancy (years)']]
+    res = res.groupby(['Entity'])
+    res = res.apply(lambda x: x.max()-x.min()).loc[lambda x: x['Life expectancy (years)'] == x['Life expectancy (years)'].max(), :]
 
     print('----------------------------------------------------------------------------------------------')
-    print('The entity with highest increase in expectancy between {0} and {1} is {2}'.format(yearA, yearB, test.index[0]))
+    print('The entity with highest increase in expectancy between {0} and {1} is {2}'.format(yearA, yearB, res.index[0]))
     print('----------------------------------------------------------------------------------------------')
 
     return

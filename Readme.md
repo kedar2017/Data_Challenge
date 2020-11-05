@@ -388,14 +388,14 @@ def inputYears():
 We consider the metric **'Interquartile Range'** to count how many values lie outside the range and mark them as 'outliers'.
 We consider some multiple of the IQR as a measure for counting the outliers.
 
-multiple = 1.5 for the below function
+multiple = 1.2 for the below function
 
 ```python
 
 def countOutliers(data=dataset):
     '''
     Counts outlier data points. The interquantile range is used as metric in setting the limits on the data.
-    A multiple (1.5) in this case is used
+    A multiple (1.2) in this case is used
     to scale the interquartile range to set the limits
     :param data: dataset
     :return: None
@@ -405,8 +405,8 @@ def countOutliers(data=dataset):
 
     quantile75, quantile25 = np.percentile(data[col], [75, 25])
 
-    lowerLimit = quantile25 - ((quantile75-quantile25) *1.5)
-    upperLimit = quantile75 + ((quantile75-quantile25) *1.5)
+    lowerLimit = quantile25 - ((quantile75-quantile25) *1.2)
+    upperLimit = quantile75 + ((quantile75-quantile25) *1.2)
 
     countOutlier = len(np.where((data[col] > upperLimit) | (data[col] < lowerLimit))[0])
     percentOutlier = round(countOutlier/len(data[col])*100, 2)
@@ -915,13 +915,16 @@ The entity with highest increase in expectancy between 1950 and 2019 is **South 
 Again, makes sense because they started with really low expectancy numbers in midst of 20th century and rapid
 growth towards 2000's. Currently has a high expectancy of ~83.
 
+```python
 The entities with quickest increase in expectancy by 40% are as follows
 Rwanda
 Swaziland
 China
+```
 
 Makes sense to have China on that list owing to it's growth in the recent times to become a world super power.
 
+```python
 The following entities reported above 95th percentile highest annual life expectancy increase between 1950 and 2019:
 Barbados
 Botswana
@@ -936,6 +939,7 @@ Rwanda
 South Korea
 Swaziland
 Zimbabwe
+```
 
 9. The module could also be used to learn and understand some historical events. This is more of 'Applying/Using'
 the module to derive interesting conclusions. We can study how a particular country's
