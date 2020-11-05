@@ -621,16 +621,15 @@ def annualChangeStatistics(yearA, yearB, data):
 
     for i in range(1, len(acData)):
 
-        current_row = acData.iloc[i]
-        previous_row= acData.iloc[i-1]
+        currentRow = acData.iloc[i]
+        previousRow= acData.iloc[i-1]
 
-        if (current_row[2] == previous_row[2] + 1):
+        if (currentRow[2] == previousRow[2] + 1):
 
-            res = res.append({'Change':current_row[3]-previous_row[3]}, ignore_index=True)
+            res = res.append({'Change':currentRow[3]-previousRow[3]}, ignore_index=True)
 
     print('----------------------------------------------------------------------------------------------')
-    print('The global median life expectancy annual change from year {0} to {1} is {2}'.format(yearA, yearB,
-    round(res.median(),2)['Change']))
+    print('The global median life expectancy annual change from year {0} to {1} is {2}'.format(yearA, yearB, round(res.median(),2)['Change']))
     print('----------------------------------------------------------------------------------------------')
 
     return
@@ -672,25 +671,22 @@ def percentileAnnualStatistics(yearA, yearB, data):
     :return:
     '''
 
-    test = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
+    res = data.loc[lambda data: (data['Year'] >= yearA) & (data['Year'] <= yearB), :]
 
     annualD = pd.DataFrame({'Entity': [], 'change': []})
 
-    for i in range(1, len(test)):
+    for i in range(1, len(res)):
 
-        current_row = test.iloc[i]
-        previous_row = test.iloc[i - 1]
+        currentRow = res.iloc[i]
+        previousRow = res.iloc[i - 1]
 
-        if current_row[2] == previous_row[2] + 1:
-            annualD = annualD.append({'Entity': current_row[0], 'change': current_row[3] - previous_row[3]},
-            ignore_index=True)
+        if currentRow[2] == previousRow[2] + 1:
+            annualD = annualD.append({'Entity': currentRow[0], 'change': currentRow[3] - previousRow[3]}, ignore_index=True)
 
-    annualD = annualD.groupby(['Entity']).apply(lambda x: x.max()).loc[lambda x: x['change'] > x['change']
-    .quantile(0.95), :]
+    annualD = annualD.groupby(['Entity']).apply(lambda x: x.max()).loc[lambda x: x['change'] > x['change'].quantile(0.95), :]
 
     print('----------------------------------------------------------------------------------------------')
-    print('The following entities reported above 95th percentile highest annual life expectancy increase between {0} and {1}: '
-    .format(yearA, yearB))
+    print('The following entities reported above 95th percentile highest annual life expectancy increase between {0} and {1}: '.format(yearA, yearB))
 
     for i in annualD.index:
         print(i)
@@ -940,6 +936,31 @@ South Korea
 Swaziland
 Zimbabwe
 ```
+
+The below data shows some interesting result. If we look at the list of entities reported above 95th percentile highest
+annual life expectancy between 2000 and 2009:
+
+```python
+----------------------------------------------------------------------------------------------
+The following entities reported above 95th percentile highest annual life expectancy increase between 2000 and 2009:
+Angola
+Botswana
+Ethiopia
+Kenya
+Malawi
+Namibia
+Rwanda
+Sierra Leone
+South Africa
+Swaziland
+Uganda
+Zambia
+Zimbabwe
+----------------------------------------------------------------------------------------------
+```
+
+The above list shows most of the countries from African continent. Looking at the recent events, there does seem to
+be drastic increase in the economic investments and growth in Africa together with the growth of medicinal science.
 
 9. The module could also be used to learn and understand some historical events. This is more of 'Applying/Using'
 the module to derive interesting conclusions. We can study how a particular country's
