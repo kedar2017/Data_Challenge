@@ -335,7 +335,7 @@ def showOutliers(data=dataset,showFigure=False):
 
 ```
 
-![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_2.png)
+![alt text](Figure_2.png)
 
 Before we dive into outliers, there is one thing to point out. Some of the queries on this data might not make sense.
 Let's take an example. Suppose we want to know the global median of life expectancy or median of life expectancy increase
@@ -343,15 +343,15 @@ from year 1700 to 2019. It is obvious that not all entities might have the data 
 is able to handle and flag such cases, the significance of statistical metrics (std, mean) is lost in that case.
 Upon observation, it looks like the continent 'entities' have year data going before 1950. See figure below.
 
-![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_3.png)
+![alt text](Figure_3.png)
 
 Now looking at the data after 1950 (below), it sums up to ~17000 data points.
 
-![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_4.png)
+![alt text](Figure_4.png)
 
 Looking at the data before 1950 (below), it sums up to just < 2000 data points. Which is <5% of the total data.
 
-![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_5.png)
+![alt text](Figure_5.png)
 
 So, only queries that have start year above **1950** make sense for most of the statistics. We always have the option of
 chopping out the data that doesn't really make sense. Instead, easier solution is to limit the search queries input by
@@ -366,22 +366,39 @@ def inputYears():
 
     yearA = 0
     yearB = 0
+    entity= ''
 
     while True:
 
-        yearA = input("Please input the starting year \n")
-        yearA = int(yearA)
-        yearB = input("Please input the ending year \n")
-        yearB = int(yearB)
+        try:
+            yearA = int(input("Please input the starting year \n"))
 
-        if (yearA >= 1950 and yearA <= 2019) and (yearB >= 1950 and yearB <= 2019) and (yearA < yearB):
-            break
+            if yearA >= 1950 and yearA < 2019:
+                break
 
-        else:
-            print("You have entered the wrong values for year. Please make sure the years are in range 1950 to 2019")
+            else:
+                print("You have entered the wrong values for year. Please make sure the years are in range 1950 to 2019")
 
-    return (yearA, yearB)
+        except:
+            print("Please try integer values only")
 
+    while True:
+
+        try:
+            yearB= int(input("Please input the ending year \n"))
+
+            if (yearB >= 1950 and yearB <= 2019) and (yearA < yearB):
+                break
+
+            else:
+                print("You have entered the wrong values for year. Please make sure the years are in range 1950 to 2019 and their order is correct")
+
+        except:
+            print("Please try integer values only")
+
+    entity = input("Please input the entity (country names)\n")
+
+    return (yearA, yearB, entity)
 
 ```
 
@@ -449,7 +466,7 @@ def winsorizeData(dataN, data=dataset, lowerLimit=0.0, upperLimit=0.0, showFigur
 
 Below is the plot showing the boxplot comparing the winsorized data and original data.
 
-![alt text](https://github.com/kedar2017/Data_Challenge/blob/main/Figure_1.png)
+![alt text](Figure_1.png)
 
 
 So the dataN is our new data that we will use for all the next functions.

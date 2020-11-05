@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import mstats
 import matplotlib.pyplot as plt
 
-dataset = pd.read_csv('../datasets_564980_1026099_life-expectancy.csv')
+dataset = pd.read_csv('datasets_564980_1026099_life-expectancy.csv')
 
 ######Input
 
@@ -15,21 +15,44 @@ def inputYears():
 
     yearA = 0
     yearB = 0
+    entity= ''
 
     while True:
 
-        yearA = input("Please input the starting year \n")
-        yearA = int(yearA)
-        yearB = input("Please input the ending year \n")
-        yearB = int(yearB)
+        try:
+            yearA = int(input("Please input the starting year \n"))
 
-        if (yearA >= 1950 and yearA <= 2019) and (yearB >= 1950 and yearB <= 2019) and (yearA < yearB):
-            break
+            if yearA >= 1950 and yearA < 2019:
 
-        else:
-            print("You have entered the wrong values for year. Please make sure the years are in range 1950 to 2019")
+                break
 
-    return (yearA, yearB)
+            else:
+
+                print("You have entered the wrong values for year. Please make sure the years are in range 1950 to 2019")
+
+        except:
+            print("Please try integer values only")
+
+    while True:
+
+        try:
+            yearB= int(input("Please input the ending year \n"))
+
+            if (yearB >= 1950 and yearB <= 2019) and (yearA < yearB):
+
+                break
+
+            else:
+
+                print("You have entered the wrong values for year. Please make sure the years are in range 1950 to 2019 and their order is correct")
+
+        except:
+            print("Please try integer values only")
+
+
+    entity = input("Please input the entity (country names)\n")
+
+    return (yearA, yearB, entity)
 
 ######Cleaning
 
@@ -375,9 +398,7 @@ if __name__ == "__main__":
 
     print("Hello we will ask you to input a few values to get the module started")
 
-    (yearA, yearB) = inputYears()
-
-    entity= input("Please input the entity \n")
+    (yearA, yearB, entity) = inputYears()
     
     entityStatistics(entity, yearA, yearB, winData)
     globalStatistics(yearA, yearB, winData)
