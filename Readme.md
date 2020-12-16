@@ -987,6 +987,3 @@ of any other country (very similar approach to code this like the rest of the co
 helpful to understand the relations between two countries, geographies and also continents.
 
 But only limited things can be gotten out of anything when in a limited time constraint like we all are :)
-
-That said, I am extremely passionate to work for the best automotive company in the world to develop the best
-self-driving platform ever built! Hopefully this module conveys what it wa meant to convey.
